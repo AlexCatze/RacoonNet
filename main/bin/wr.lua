@@ -15,7 +15,7 @@ file_types = {}
 file_types["html"] = "text/html"
 local string = require "string"
 local card, err = rn.init(sysutils.readconfig("racoonnet"))
-
+local debug = false -- для разрабов иил тех кто допилит это, пишет всё что принято и расшифровано на экран (изза этого сыпется гуи)
 local wScr, hScr = component.gpu.getResolution()
 local WinW = wScr - 4
 local WinH = hScr - 8
@@ -252,15 +252,19 @@ myIP = getIP()
 okey = ""
 key = ""
 	  adr, iresp = card:receive(5)
-    print(iresp)
 while #key < 16 do
 key = key..host
 end
---print(key..#key)
-okey = string.sub(key,1,16)
+
+if debug then
+print(iresp)
+print(key..#key)
 print(okey..#okey)
-    resp = component.data.decrypt(iresp,okey,okey)
 print(resp)
+end
+
+okey = string.sub(key,1,16)
+    resp = component.data.decrypt(iresp,okey,okey)
 	  if not adr then
 	    local err = "<html><body>Превышено время ожидания ответа.</body></html>"
 	    return err, err, nil , nil, site, "text/html"
