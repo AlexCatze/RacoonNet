@@ -9,12 +9,11 @@ local sysutils = require("sysutils")
 local gpu  = require("component").gpu
 local text = require("text")
 local wlen = require("unicode").wlen
-
+local getIP = require "opennet".getIP
 local config = sysutils.readconfig("wr")
-
 file_types = {}
 file_types["html"] = "text/html"
-
+local string = require "string"
 local card, err = rn.init(sysutils.readconfig("racoonnet"))
 
 local wScr, hScr = component.gpu.getResolution()
@@ -40,14 +39,14 @@ local siteform = {}
 forms.ignoreAll()
 
 function draw_header(label)
-  local head = " Wet Racoon 1.1"
+  local head = " Wet Racoon 2.0 'HTTPS'"
   if label then head = head.." ("..label..")"end
   Header.W=wScr -  head:len() - 5
   head = head..string.rep(" ",Header.W)
   Header.caption = head
   Header:redraw()
 end
-
+--AlexCatze
 function get_file(path)
   if path=='' or path==nil or path=="\n" then return end
   if path:sub(-1)=="\n" then path=path:sub(1,-2) end
@@ -248,8 +247,20 @@ function rn_request(site)
     if doc == nil then doc = "/" end
 	card:send(host,"GET "..doc.." HTTP/1.1\nHost: "..host)
 	local adr, resp
+myIP = getIP()
 	while true do
-	  adr, resp = card:receive(5)
+okey = ""
+key = ""
+	  adr, iresp = card:receive(5)
+    print(iresp)
+while #key < 16 do
+key = key..host
+end
+--print(key..#key)
+okey = string.sub(key,1,16)
+print(okey..#okey)
+    resp = component.data.decrypt(iresp,okey,okey)
+print(resp)
 	  if not adr then
 	    local err = "<html><body>Превышено время ожидания ответа.</body></html>"
 	    return err, err, nil , nil, site, "text/html"
