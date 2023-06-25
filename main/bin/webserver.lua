@@ -9,8 +9,6 @@ local card, err = rn.init(sysutils.readconfig("racoonnet"))
 local config = {}
 config.directory = "/www/"
 local clientip, request, path
-local str = require "string"
-local key = ""
 
 file_types = {}
 file_types["html"] = "text/html"
@@ -21,34 +19,15 @@ if not card then
   return
 end
 function senderror(code)
-  key = ""
-    while #key < 16 do
-    key = key..card.ip
-    end
-    Ckey = str.sub(key,1,16)
-    print(key)
   local codestr = code.." "..codes[code]
   local html = "<html><body>"..codestr.."</body></html>"
   local str = "HTTP/1.1 "..codestr.."\nContent-Type: text/html\nContent-Length:"..html:len().."\n\n"..html
-    edata = component.data.encrypt(str,Ckey,Ckey)
-    print(edata)
-    --on.send(clientip,edata)
-    print("senderr")
-
-    card:send(clientip, edata)
+  card:send(clientip, str)
 end
 
 function redirect(redirto)
   local resp = "HTTP/1.1 302 Found\nLocation: "..redirto.."\n\n";
-    while #key < 16 do
-    key = key..card.ip
-    end
-    Ckey = str.sub(key,1,16)
-    print(key)
-
-    print("redirect")
-    card:send(clientip, component.data.encrypt(resp,Ckey,Ckey))
-  --card:send(clientip, component.data.encode64(resp))
+  card:send(clientip, resp)
 end
 
 function response()
@@ -72,14 +51,7 @@ function response()
 		end
 		fcontent = fcontent.."</body></html>"
 	    local resp = "HTTP/1.1 200 OK\nContent-Type: text/html\nContent-Length: "..fcontent:len().."\n\n"..fcontent;
-    while #key < 16 do
-    key = key..card.ip
-    end
-    Ckey = str.sub(key,1,16)
-    --print(key)
-
-    print("resp")
-    card:send(clientip, component.data.encrypt(resp,Ckey,Ckey))
+        card:send(clientip, resp)
 		return
 	  end
 	else
@@ -93,16 +65,7 @@ function response()
       ftype = "text/plain"
     end
     local resp = "HTTP/1.1 200 OK\nContent-Type: "..ftype.."\nContent-Length: "..fcontent:len().."\n\n"..fcontent;
-    key = ""
-    while #key < 16 do
-    key = key..card.ip
-    end
-    Ckey = str.sub(key,1,16)
-    print("resp1")
-    --print(Ckey)
-    --print(#key)
-    --print(#Ckey)
-    card:send(clientip, component.data.encrypt(resp,Ckey,Ckey))
+    card:send(clientip, resp)
   end
 end
 

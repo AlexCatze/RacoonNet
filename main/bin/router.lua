@@ -13,7 +13,7 @@ local ip
 local err
 local config = sysutils.readconfig("router")
 local lang = sysutils.readlang("router")
-
+local dnsIP = "cf9.f42"
 
 --//Функция отправки пакета по ip получателя
 function route(recieverip, senderip, ... )
@@ -35,7 +35,13 @@ function route(recieverip, senderip, ... )
 end
 
 --//Список команд роутера
-commands={}
+commands={"getDNSIP"}
+
+--//Отправка IP ДНС сервера клиенту
+function commands.getDNSIP()
+  route(sendIP, recIP, dnsIP)
+  return
+end
 
 --//Пинг
 function commands.ping()
@@ -53,12 +59,13 @@ end
 
 --//Выдача ip
 function commands.getip()
+--print(opennet.receive())
   if lan[acceptedAdr:sub(1,3)] then
     local adr=ip.."."..senderAdr:sub(1,3)
-	clients[adr]=senderAdr
-	clientscard[adr]=acceptedAdr
+clients[adr]=senderAdr
+clientscard[adr]=acceptedAdr
     lan[acceptedAdr:sub(1,3)]:directsend(senderAdr, adr, ip, "setip" )
-	sysutils.log(lang.givenip..": "..adr, 1, "router")
+sysutils.log(lang.givenip..": "..adr, 1, "router")
     return 
   else
     return
