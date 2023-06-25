@@ -13,7 +13,7 @@ local ip
 local err
 local config = sysutils.readconfig("router")
 local lang = sysutils.readlang("router")
-local dnsIP = "cf9.f42"
+local dnsIP = config["dnsIP"]
 
 --//Функция отправки пакета по ip получателя
 function route(recieverip, senderip, ... )
