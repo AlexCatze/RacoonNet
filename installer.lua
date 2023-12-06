@@ -11,6 +11,7 @@ shell.execute("wget -f https://pastebin.com/raw/e5uEpxpZ /lib/sysutils.lua")
 shell.execute("wget -f https://pastebin.com/raw/WBH19bBg /boot/05_config.lua")
 fs.makeDirectory("/etc/themes/")
 shell.execute("wget -f https://pastebin.com/raw/00XsAdhf /etc/themes/standart.thm")
+shell.execute("local net = require 'opennet' net.getIP() >> /boot/80_netconfig.lua")
 
 for _,v in pairs(files) do
   if not fs.exists(v:match(".*/")) then fs.makeDirectory(v:match(".*/")) end
