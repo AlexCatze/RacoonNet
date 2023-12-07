@@ -9,7 +9,10 @@ local sysutils = require("sysutils")
 local gpu  = require("component").gpu
 local text = require("text")
 local wlen = require("unicode").wlen
+local myIP = ""
+local getIP = require "opennet".getIP
 
+myIP = getIP()
 local config = sysutils.readconfig("wr")
 
 file_types = {}
@@ -241,41 +244,65 @@ function download(path)
   forms.run(SaveForm)
 end
 
+function useDNS(site,doc)
+  card:send(myIP:sub(1,3),"getDNSIP")
+  local _,dnsIP = card:receive(3)
+  card:send(dnsIP,"DNStoIP",site)
+  --print(site)
+  local _,_,_,host = card:receive(3)
+  --print(host)
+
+  --//Making response :/
+	card:send(host,"GET "..doc.." HTTP/1.1\nHost: "..host)	
+	adr,resp = card:receive(3)
+  return host,resp
+end
+
 function rn_request(site)
   if card then
     local host,doc=site:match('(.-)/(.*)')
     if not host then host=site doc=nil end
     if doc == nil then doc = "/" end
-	card:send(host,"GET "..doc.." HTTP/1.1\nHost: "..host)
-	local adr, resp
-	while true do
-	  adr, resp = card:receive(5)
-	  if not adr then
-	    local err = "<html><body>Превышено время ожидания ответа.</body></html>"
-	    return err, err, nil , nil, site, "text/html"
-	  elseif adr == host then
-	    break
-	  end  
-	end
-	local code = tonumber(resp:match(" %d%d%d "))
-	local headers = {}
-	for str in string.gmatch(resp, "\n[^:\n]*:[^:\n]*") do
+  card:send(host,"GET "..doc.." HTTP/1.1\nHost: "..host)
+  local adr, resp
+  while true do
+    adr, resp = card:receive(3)
+     if not adr then
+      adr,resp = useDNS(host,doc)
+      host = adr
+      if adr then
+	card:send(host,"GET "..doc.." HTTP/1.1\nHost: "..host)	
+	adr,resp = card:receive(3)
+	break
+      else
+      local err = "<html><body>Превышено время ожидания ответа.</body></html>"
+      return err, err, nil , nil, site, "text/html"
+      end
+    elseif adr == host then
+      break
+    end
+  
+  end
+
+  local code = tonumber(resp:match(" %d%d%d "))
+  local headers = {}
+  for str in string.gmatch(resp, "\n[^:\n]*:[^:\n]*") do
       headers[str:sub(2,str:find(":")-1)] = str:sub(str:find(":")+2)
     end
-	if code == 302 then
+  if code == 302 then
       return get_file(headers["Location"])
     elseif resp:match("\n\n") then
-	  local body = resp:match("\n\n.*"):sub(3,-1)
+    local body = resp:match("\n\n.*"):sub(3,-1)
       return resp, body, code, headers, site, headers["Content-Type"]
-	else
-	  return resp, nil, code, headers, site, headers["Content-Type"]
-	end
   else
-	local err = "<html><body>Ошибка подключения к сети OpenNet: <font color=0xFF0000>"..err.."</font></body></html>"
-	return err, err, nil , nil , site, "text/html"
+    return resp, nil, code, headers, site, headers["Content-Type"]
   end
-end
+  else
+  local err = "<html><body>Ошибка подключения к сети OpenNet: <font color=0xFF0000>"..err.."</font></body></html>"
+  return err, err, nil , nil , site, "text/html"
+  end
 
+end
 
 
 function local_request(path)

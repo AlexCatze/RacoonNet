@@ -16,6 +16,19 @@ if not server then
   print("Формат вызова:")
   print("chat <IP или dns-имя сервера>")
   return
+else
+  on.send(server,"ping")
+  local ip,sender,mess=on.receive()
+   if mess == "SEND ERR" then
+	print("Рыскаю по DNS...")
+	on.send(ip:sub(1,3),"getDNSIP")
+	local ip,sender,mess=on.receive()
+	on.send(mess,"DNStoIP",server)
+	local ip,sender,mess,sip=on.receive()
+	print("Надеюсь это и есь ip чат сервера "..mess)
+	server = sip
+	else
+	end
 end
 ev, _, _, _, Name=event.pull(1,"key_up")
 if not ev then

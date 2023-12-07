@@ -55,6 +55,14 @@ if rconf.wan.address then
 rconf.wan.type = component.type(rconf.wan.address)
 end
 
+print("Enter DNS IP. Type n if you not have DNS")
+local dnsip = io.read()
+if dnsip == "n" then
+rconf.dnsIP = "nodns"
+else
+rconf.dnsIP = dnsip
+end
+
 while true do
 if i == 0 then break end
 print("Select LAN card. Type \"N\" to end.")
